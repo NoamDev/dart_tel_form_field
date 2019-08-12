@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import './tel_input_data.dart';
 import './tel_input.dart';
+import 'text_field.dart';
+import 'package:flutter_masked_text/flutter_masked_text.dart';
 
 abstract class TelInputViewModel extends State<TelInput> {
   String _selectedDialCode;
@@ -14,6 +16,8 @@ abstract class TelInputViewModel extends State<TelInput> {
       TelInputData().getDialCodeHintTextMapping();
   final List<String> _validDialCodes = TelInputData().getValidDialCode();
   TextEditingController _searchTextController = new TextEditingController();
+  TextEditingController _dropDownController = new TextEditingController();
+  TextEditingController _dialCodeController = new TextEditingController();
   FocusNode _inputFocusNode;
 
   @override
@@ -55,13 +59,36 @@ abstract class TelInputViewModel extends State<TelInput> {
   }
 
   Widget buildTelInputField(BuildContext context) {
-    return (TextField(
-      onChanged: (String val) => _onTextChange(val),
-      onTap: () => _onTextPress(context),
-      keyboardType: TextInputType.number,
-      decoration: InputDecoration(hintText: _phoneNumberHintText),
-      focusNode: _inputFocusNode,
-    ));
+    return (Column( children:[
+          TextField( readOnly: true,
+            textAlign: TextAlign.center,
+            controller: _dropDownController,
+            decoration: InputDecoration(
+                suffixIcon: Icon(Icons.arrow_drop_down)
+            ),
+            onTap: () => _onTextPress(context),
+          ),
+          Row(children:[
+            Container(child: MyTextField(
+                  controller: _dialCodeController,
+                  decoration: InputDecoration(
+                      prefixText: '+',
+                  )
+                ),
+              width:100,
+              padding: EdgeInsetsDirectional.only(end:25.0),
+            ),
+            Expanded(child:
+                  TextField(
+                        onChanged: (String val) => _onTextChange(val),
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(hintText: _phoneNumberHintText),
+                        focusNode: _inputFocusNode,
+                      ),
+            )
+          ])
+    ])
+    );;
   }
 
   void _onTextChange(String val) {
@@ -76,6 +103,7 @@ abstract class TelInputViewModel extends State<TelInput> {
   void _updatePhoneNumberHintText(val) {
     _phoneNumberHintText = val;
   }
+
 
   void _onTextPress(BuildContext context) {
     _showCountriesDialog(context);
@@ -106,13 +134,10 @@ abstract class TelInputViewModel extends State<TelInput> {
               itemCount: countries.length,
               itemBuilder: (BuildContext context, int index) {
                 TelInputCountry country = countries[index];
-                String listTileText =
-                    '+' + country.dialCode + ' ' + country.name;
                 return _filter == null || _filter == ""
-                    ? _buildCountriesListTile(listTileText, country.dialCode)
-                    : listTileText.toLowerCase().contains(_filter.toLowerCase())
-                        ? _buildCountriesListTile(
-                            listTileText, country.dialCode)
+                    ? _buildCountriesListTile(country)
+                    : country.name.toLowerCase().contains(_filter.toLowerCase())
+                        ? _buildCountriesListTile(country)
                         : new Container();
               },
             ),
@@ -120,13 +145,16 @@ abstract class TelInputViewModel extends State<TelInput> {
         ]));
   }
 
-  Widget _buildCountriesListTile(String listTileText, String dialCode) {
+  Widget _buildCountriesListTile(TelInputCountry country) {
+    String listTileText = '+' + country.dialCode + ' ' + country.name;
     return new ListTile(
         title: new Text(listTileText),
         onTap: () {
           setState(() {
-            _selectedDialCode = '+' + dialCode;
+            _selectedDialCode = '+' + country.dialCode;
           });
+          _dropDownController.text = country.shortName;
+          _dialCodeController.text = country.dialCode;
           String val = _getHintTextByDialCode();
           _updatePhoneNumberHintText(val);
           _inputFocusNode.unfocus();
