@@ -4,20 +4,22 @@ import './tel_input_data.dart';
 import './tel_input.dart';
 import 'text_field.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
+import 'package:states_rebuilder/states_rebuilder.dart';
+
 
 abstract class TelInputViewModel extends State<TelInput> {
   String _selectedDialCode;
-  String _phoneNumberHintText;
   String _phoneNumber;
   bool _includeDialCode;
-  String _filter;
-  final String _defaultDialCode = '+852';
-  final Map<String, String> _dialCodeHintTextMapping =
-      TelInputData().getDialCodeHintTextMapping();
+  final String _defaultDialCode = '972';
+
   final List<String> _validDialCodes = TelInputData().getValidDialCode();
+  final Map<String,String> _dialCodeCountryNameMapping =
+      TelInputData().getDialCodeCountryNameMapping();
   TextEditingController _searchTextController = new TextEditingController();
   TextEditingController _dropDownController = new TextEditingController();
   TextEditingController _dialCodeController = new TextEditingController();
+  ListRebuilder bloc = new ListRebuilder();
   FocusNode _inputFocusNode;
 
   @override
@@ -25,34 +27,34 @@ abstract class TelInputViewModel extends State<TelInput> {
     super.initState();
 
     _searchTextController.addListener(() {
-      setState(() {
-        _filter = _searchTextController.text;
-      });
+        bloc.filter(_searchTextController.text);
     });
 
-    _selectedDialCode = ![null, false].contains(widget.dialCode)
+    _dialCodeController.addListener(() {
+      var code = _dialCodeController.text;
+      if(_selectedDialCode != code) {
+        _selectedDialCode = code;
+        _dropDownController.text = _dialCodeCountryNameMapping[code] ?? "invalid country code";
+        _onTextChange(code, _phoneNumber);
+      }
+    });
+
+    _dialCodeController.text = ![null, false].contains(widget.dialCode)
         ? widget.dialCode
         : _defaultDialCode;
-
-    if (!_selectedDialCode.startsWith('+')) {
-      _selectedDialCode = '+' + _selectedDialCode;
-    }
 
     if (!_validDialCodes.contains(_selectedDialCode)) {
       throw new Exception('Invalid Dial Code');
     }
 
-    _includeDialCode =
-        widget.includeDialCode == null ? false : widget.includeDialCode;
-
-    String val = _getHintTextByDialCode();
-    _updatePhoneNumberHintText(val);
 
     _inputFocusNode = FocusNode();
   }
 
   @override
   void dispose() {
+    _dropDownController.dispose();
+    _dialCodeController.dispose();
     _searchTextController.dispose();
     _inputFocusNode.dispose();
     super.dispose();
@@ -73,36 +75,34 @@ abstract class TelInputViewModel extends State<TelInput> {
                   controller: _dialCodeController,
                   decoration: InputDecoration(
                       prefixText: '+',
-                  )
+                  ),
+                  keyboardType: TextInputType.phone,
                 ),
               width:100,
               padding: EdgeInsetsDirectional.only(end:25.0),
             ),
             Expanded(child:
                   TextField(
-                        onChanged: (String val) => _onTextChange(val),
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(hintText: _phoneNumberHintText),
+                        onChanged: (String val) => _onTextChange(_selectedDialCode,val),
+
+                        keyboardType: TextInputType.phone,
+                        decoration: InputDecoration(hintText: "phone number"),
                         focusNode: _inputFocusNode,
                       ),
             )
           ])
     ])
-    );;
+    );
   }
 
-  void _onTextChange(String val) {
-    _phoneNumber = val;
+  void _onTextChange(dialCode,phoneNumber) {
+    _phoneNumber = phoneNumber;
 
     if (widget.onChange is Function) {
-      widget.onChange(
-          _includeDialCode ? _selectedDialCode + _phoneNumber : _phoneNumber);
+      widget.onChange('+'+_selectedDialCode + (_phoneNumber??''));
     }
   }
 
-  void _updatePhoneNumberHintText(val) {
-    _phoneNumberHintText = val;
-  }
 
 
   void _onTextPress(BuildContext context) {
@@ -130,16 +130,20 @@ abstract class TelInputViewModel extends State<TelInput> {
             controller: _searchTextController,
           ),
           new Expanded(
-            child: new ListView.builder(
-              itemCount: countries.length,
-              itemBuilder: (BuildContext context, int index) {
-                TelInputCountry country = countries[index];
-                return _filter == null || _filter == ""
-                    ? _buildCountriesListTile(country)
-                    : country.name.toLowerCase().contains(_filter.toLowerCase())
-                        ? _buildCountriesListTile(country)
-                        : new Container();
-              },
+            child: StateBuilder(
+              viewModels: [bloc],
+              tag:"countries_list",
+              builder: (_,__)=> new ListView.builder(
+                itemCount: countries.length,
+                itemBuilder: (BuildContext context, int index) {
+                  TelInputCountry country = countries[index];
+                  return bloc._filter == null || bloc._filter == ""
+                      ? _buildCountriesListTile(country)
+                      : country.name.toLowerCase().contains(bloc._filter.toLowerCase())
+                      ? _buildCountriesListTile(country)
+                      : new Container();
+                },
+              )
             ),
           )
         ]));
@@ -150,22 +154,23 @@ abstract class TelInputViewModel extends State<TelInput> {
     return new ListTile(
         title: new Text(listTileText),
         onTap: () {
-          setState(() {
-            _selectedDialCode = '+' + country.dialCode;
-          });
           _dropDownController.text = country.shortName;
           _dialCodeController.text = country.dialCode;
-          String val = _getHintTextByDialCode();
-          _updatePhoneNumberHintText(val);
           _inputFocusNode.unfocus();
           FocusScope.of(context).requestFocus(_inputFocusNode);
           Navigator.pop(context);
         });
   }
 
-  String _getHintTextByDialCode() {
-    return ![null, false].contains(_dialCodeHintTextMapping[_selectedDialCode])
-        ? _dialCodeHintTextMapping[_selectedDialCode]
-        : _dialCodeHintTextMapping[_defaultDialCode];
+
+}
+class ListRebuilder extends StatesRebuilder{
+  String _filter = "";
+  filter(String filter){
+    if(filter != _filter)
+    {
+      _filter = filter;
+      rebuildStates(["countries_list"]);
+    }
   }
 }

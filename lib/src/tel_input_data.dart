@@ -17,6 +17,7 @@ class TelInputData {
           country.length == 6 ? country[5] : 0,
           country.length == 7 ? country[6] : null));
     });
+    countriesList.sort((a, b)=>( b.priority-a.priority != 0  ?  b.priority-a.priority  :  a.name.compareTo(b.name) ));
     return countriesList;
   }
 
@@ -24,7 +25,16 @@ class TelInputData {
     var map = new Map<String, String>();
     var countries = _getCountries();
     countries.asMap().forEach((i, country) {
-      map['+' + country[4]] = country[3];
+      map[country[4]] = country[3];
+    });
+    return map;
+  }
+
+  getDialCodeCountryNameMapping() {
+    var map = new Map<String, String>();
+    var countries = _getCountries();
+    countries.asMap().forEach((i, country) {
+      map[country[4]] = country[1];
     });
     return map;
   }
@@ -33,7 +43,7 @@ class TelInputData {
     List<String> dailCodeList = [];
     var countries = _getCountries();
     countries.asMap().forEach((i, country) {
-      dailCodeList.add('+' + country[4]);
+      dailCodeList.add(country[4]);
     });
     return dailCodeList;
   }
@@ -51,7 +61,7 @@ class TelInputData {
       ["Argentina","Argentina","ar","011 15-2345-6789","54"],
       ["Armenia (Հայաստան)","Armenia","am","077 123456","374"],
       ["Aruba","Aruba","aw","560 1234","297"],
-      ["Australia","Australia","au","0412 345 678","61",0],
+      ["Australia","Australia","au","0412 345 678","61"],
       ["Austria (Österreich)","Austria","at","0664 123456","43"],
       ["Azerbaijan (Azərbaycan)","Azerbaijan","az","040 123 45 67","994"],
       ["Bahamas","Bahamas","bs","(242) 359-1234","1"],
@@ -78,14 +88,14 @@ class TelInputData {
       ["Cameroon (Cameroun)","Cameroon","cm","6 71 23 45 67","237"],
       ["Canada","Canada","ca","(204) 234-5678","1",1,["204","226","236","249","250","289","306","343","365","387","403","416","418","431","437","438","450","506","514","519","548","579","581","587","604","613","639","647","672","705","709","742","778","780","782","807","819","825","867","873","902","905"]],
       ["Cape Verde (Kabu Verdi)","Cape Verde","cv","991 12 34","238"],
-      ["Caribbean Netherlands","Caribbean Netherlands","bq","318 1234","599",1],
+      ["Caribbean Netherlands","Caribbean Netherlands","bq","318 1234","599"],
       ["Cayman Islands","Cayman Islands","ky","(345) 323-1234","1"],
       ["Central African Republic (République centrafricaine)","Central African Republic","cf","70 01 23 45","236"],
       ["Chad (Tchad)","Chad","td","63 01 23 45","235"],
       ["Chile","Chile","cl","9 6123 4567","56"],
       ["China (中国)","China","cn","131 2345 6789","86"],
-      ["Christmas Island","Christmas Island","cx","0412 345 678","61",2],
-      ["Cocos (Keeling) Islands","Cocos (Keeling) Islands","cc","0412 345 678","61",1],
+      ["Christmas Island","Christmas Island","cx","0412 345 678","61"],
+      ["Cocos (Keeling) Islands","Cocos (Keeling) Islands","cc","0412 345 678","61"],
       ["Colombia","Colombia","co","321 1234567","57"],
       ["Comoros (‫جزر القمر‬‎)","Comoros","km","321 23 45","269"],
       ["Congo (DRC) (Jamhuri ya Kidemokrasia ya Kongo)","DR Congo","cd","0991 234 567","243"],
@@ -95,7 +105,7 @@ class TelInputData {
       ["Côte d’Ivoire","Ivory Coast","ci","01 23 45 67","225"],
       ["Croatia (Hrvatska)","Croatia","hr","092 123 4567","385"],
       ["Cuba","Cuba","cu","05 1234567","53"],
-      ["Curaçao","Curaçao","cw","9 518 1234","599",0],
+      ["Curaçao","Curaçao","cw","9 518 1234","599"],
       ["Cyprus (Κύπρος)","Cyprus","cy","96 123456","357"],
       ["Czech Republic (Česká republika)","Czechia","cz","601 123 456","420"],
       ["Denmark (Danmark)","Denmark","dk","32 12 34 56","45"],
@@ -112,7 +122,7 @@ class TelInputData {
       ["Falkland Islands (Islas Malvinas)","Falkland Islands","fk","51234","500"],
       ["Faroe Islands (Føroyar)","Faroe Islands","fo","211234","298"],
       ["Fiji","Fiji","fj","701 2345","679"],
-      ["Finland (Suomi)","Finland","fi","041 2345678","358",0],
+      ["Finland (Suomi)","Finland","fi","041 2345678","358"],
       ["France","France","fr","06 12 34 56 78","33"],
       ["French Guiana (Guyane française)","French Guiana","gf","0694 20 12 34","594"],
       ["French Polynesia (Polynésie française)","French Polynesia","pf","87 12 34 56","689"],
@@ -125,10 +135,10 @@ class TelInputData {
       ["Greece (Ελλάδα)","Greece","gr","691 234 5678","30"],
       ["Greenland (Kalaallit Nunaat)","Greenland","gl","22 12 34","299"],
       ["Grenada","Grenada","gd","(473) 403-1234","1"],
-      ["Guadeloupe","Guadeloupe","gp","0690 00 12 34","590",0],
+      ["Guadeloupe","Guadeloupe","gp","0690 00 12 34","590"],
       ["Guam","Guam","gu","(671) 300-1234","1"],
       ["Guatemala","Guatemala","gt","5123 4567","502"],
-      ["Guernsey","Guernsey","gg","07781 123456","44",1],
+      ["Guernsey","Guernsey","gg","07781 123456","44"],
       ["Guinea (Guinée)","Guinea","gn","601 12 34 56","224"],
       ["Guinea-Bissau (Guiné Bissau)","Guinea-Bissau","gw","955 012 345","245"],
       ["Guyana","Guyana","gy","609 1234","592"],
@@ -142,14 +152,14 @@ class TelInputData {
       ["Iran (‫ایران‬‎)","Iran","ir","0912 345 6789","98"],
       ["Iraq (‫العراق‬‎)","Iraq","iq","0791 234 5678","964"],
       ["Ireland","Ireland","ie","085 012 3456","353"],
-      ["Isle of Man","Isle of Man","im","07924 123456","44",2],
-      ["Israel (‫ישראל‬‎)","Israel","il","050-234-5678","972"],
-      ["Italy (Italia)","Italy","it","312 345 6789","39",0],
+      ["Isle of Man","Isle of Man","im","07924 123456","44"],
+      ["Israel (‫ישראל‬‎)","Israel","il","050-234-5678","972",2],
+      ["Italy (Italia)","Italy","it","312 345 6789","39"],
       ["Jamaica","Jamaica","jm","(876) 210-1234","1",4,["876","658"]],
       ["Japan (日本)","Japan","jp","090-1234-5678","81"],
-      ["Jersey","Jersey","je","07797 712345","44",3],
+      ["Jersey","Jersey","je","07797 712345","44"],
       ["Jordan (‫الأردن‬‎)","Jordan","jo","07 9012 3456","962"],
-      ["Kazakhstan (Казахстан)","Kazakhstan","kz","8 (771) 000 9998","7",1],
+      ["Kazakhstan (Казахстан)","Kazakhstan","kz","8 (771) 000 9998","7"],
       ["Kenya","Kenya","ke","0712 123456","254"],
       ["Kiribati","Kiribati","ki","72001234","686"],
       ["Kosovo","Kosovo","xk","043 201 234","383"],
@@ -176,7 +186,7 @@ class TelInputData {
       ["Martinique","Martinique","mq","0696 20 12 34","596"],
       ["Mauritania (‫موريتانيا‬‎)","Mauritania","mr","22 12 34 56","222"],
       ["Mauritius (Moris)","Mauritius","mu","5251 2345","230"],
-      ["Mayotte","Mayotte","yt","0639 01 23 45","262",1],
+      ["Mayotte","Mayotte","yt","0639 01 23 45","262"],
       ["Mexico (México)","Mexico","mx","044 222 123 4567","52"],
       ["Micronesia","Micronesia","fm","350 1234","691"],
       ["Moldova (Republica Moldova)","Moldova","md","0621 12 345","373"],
@@ -184,7 +194,7 @@ class TelInputData {
       ["Mongolia (Монгол)","Mongolia","mn","8812 3456","976"],
       ["Montenegro (Crna Gora)","Montenegro","me","067 622 901","382"],
       ["Montserrat","Montserrat","ms","(664) 492-3456","1"],
-      ["Morocco (‫المغرب‬‎)","Morocco","ma","0650-123456","212",0],
+      ["Morocco (‫المغرب‬‎)","Morocco","ma","0650-123456","212"],
       ["Mozambique (Moçambique)","Mozambique","mz","82 123 4567","258"],
       ["Myanmar (Burma) (မြန်မာ)","Myanmar","mm","09 212 3456","95"],
       ["Namibia (Namibië)","Namibia","na","081 123 4567","264"],
@@ -200,7 +210,7 @@ class TelInputData {
       ["Norfolk Island","Norfolk Island","nf","3 81234","672"],
       ["North Korea (조선 민주주의 인민 공화국)","North Korea","kp","0192 123 4567","850"],
       ["Northern Mariana Islands","Northern Mariana Islands","mp","(670) 234-5678","1"],
-      ["Norway (Norge)","Norway","no","406 12 345","47",0],
+      ["Norway (Norge)","Norway","no","406 12 345","47"],
       ["Oman (‫عُمان‬‎)","Oman","om","9212 3456","968"],
       ["Pakistan (‫پاکستان‬‎)","Pakistan","pk","0301 2345678","92"],
       ["Palau","Palau","pw","620 1234","680"],
@@ -214,15 +224,15 @@ class TelInputData {
       ["Portugal","Portugal","pt","912 345 678","351"],
       ["Puerto Rico","Puerto Rico","pr","(787) 234-5678","1",3,["787","939"]],
       ["Qatar (‫قطر‬‎)","Qatar","qa","3312 3456","974"],
-      ["Réunion (La Réunion)","Réunion","re","0692 12 34 56","262",0],
+      ["Réunion (La Réunion)","Réunion","re","0692 12 34 56","262"],
       ["Romania (România)","Romania","ro","0712 034 567","40"],
-      ["Russia (Россия)","Russia","ru","8 (912) 345-67-89","7",0],
+      ["Russia (Россия)","Russia","ru","8 (912) 345-67-89","7"],
       ["Rwanda","Rwanda","rw","0720 123 456","250"],
-      ["Saint Barthélemy","Saint Barthélemy","bl","0690 00 12 34","590",1],
+      ["Saint Barthélemy","Saint Barthélemy","bl","0690 00 12 34","590"],
       ["Saint Helena","Saint Helena, Ascension and Tristan da Cunha","sh","51234","290"],
       ["Saint Kitts and Nevis","Saint Kitts and Nevis","kn","(869) 765-2917","1"],
       ["Saint Lucia","Saint Lucia","lc","(758) 284-5678","1"],
-      ["Saint Martin (Saint-Martin (partie française))","Saint Martin","mf","0690 00 12 34","590",2],
+      ["Saint Martin (Saint-Martin (partie française))","Saint Martin","mf","0690 00 12 34","590"],
       ["Saint Pierre and Miquelon (Saint-Pierre-et-Miquelon)","Saint Pierre and Miquelon","pm","055 12 34","508"],
       ["Saint Vincent and the Grenadines","Saint Vincent and the Grenadines","vc","(784) 430-1234","1"],
       ["Samoa","Samoa","ws","72 12345","685"],
@@ -246,7 +256,7 @@ class TelInputData {
       ["Sri Lanka (ශ්‍රී ලංකාව)","Sri Lanka","lk","071 234 5678","94"],
       ["Sudan (‫السودان‬‎)","Sudan","sd","091 123 1234","249"],
       ["Suriname","Suriname","sr","741-2345","597"],
-      ["Svalbard and Jan Mayen","Svalbard and Jan Mayen","sj","412 34 567","47",1],
+      ["Svalbard and Jan Mayen","Svalbard and Jan Mayen","sj","412 34 567","47"],
       ["Swaziland","Eswatini","sz","7612 3456","268"],
       ["Sweden (Sverige)","Sweden","se","070-123 45 67","46"],
       ["Switzerland (Schweiz)","Switzerland","ch","078 123 45 67","41"],
@@ -269,20 +279,20 @@ class TelInputData {
       ["Uganda","Uganda","ug","0712 345678","256"],
       ["Ukraine (Україна)","Ukraine","ua","039 123 4567","380"],
       ["United Arab Emirates (‫الإمارات العربية المتحدة‬‎)","United Arab Emirates","ae","050 123 4567","971"],
-      ["United Kingdom","United Kingdom","gb","07400 123456","44",0],
-      ["United States","United States","us","(201) 555-0123","1",0],
+      ["United Kingdom","United Kingdom","gb","07400 123456","44",1],
+      ["United States","United States","us","(201) 555-0123","1",1],
       ["Uruguay","Uruguay","uy","094 231 234","598"],
       ["Uzbekistan (Oʻzbekiston)","Uzbekistan","uz","8 91 234 56 78","998"],
       ["Vanuatu","Vanuatu","vu","591 2345","678"],
-      ["Vatican City (Città del Vaticano)","Vatican City","va","312 345 6789","39",1],
+      ["Vatican City (Città del Vaticano)","Vatican City","va","312 345 6789","39"],
       ["Venezuela","Venezuela","ve","0412-1234567","58"],
       ["Vietnam (Việt Nam)","Vietnam","vn","091 234 56 78","84"],
       ["Wallis and Futuna (Wallis-et-Futuna)","Wallis and Futuna","wf","50 12 34","681"],
-      ["Western Sahara (‫الصحراء الغربية‬‎)","Western Sahara","eh","0650-123456","212",1],
+      ["Western Sahara (‫الصحراء الغربية‬‎)","Western Sahara","eh","0650-123456","212"],
       ["Yemen (‫اليمن‬‎)","Yemen","ye","0712 345 678","967"],
       ["Zambia","Zambia","zm","095 5123456","260"],
       ["Zimbabwe","Zimbabwe","zw","071 234 5678","263"],
-      ["Åland Islands","Åland Islands","ax","041 2345678","358",1]
+      ["Åland Islands","Åland Islands","ax","041 2345678","358"]
       ];
   }
 }
