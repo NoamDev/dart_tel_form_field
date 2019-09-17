@@ -3,14 +3,12 @@ import 'package:flutter/services.dart';
 import './tel_input_data.dart';
 import './tel_input.dart';
 import 'text_field.dart';
-import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 
 
 abstract class TelInputViewModel extends State<TelInput> {
   String _selectedDialCode;
   String _phoneNumber;
-  bool _includeDialCode;
   final String _defaultDialCode = '972';
 
   final List<String> _validDialCodes = TelInputData().getValidDialCode();
@@ -30,18 +28,22 @@ abstract class TelInputViewModel extends State<TelInput> {
         bloc.filter(_searchTextController.text);
     });
 
+    _selectedDialCode = ![null, false].contains(widget.dialCode)
+        ? widget.dialCode
+        : _defaultDialCode;
+
+    _dialCodeController.text = _selectedDialCode;
+    _dropDownController.text = _dialCodeCountryNameMapping[_selectedDialCode] ?? "invalid country code";
+
     _dialCodeController.addListener(() {
       var code = _dialCodeController.text;
       if(_selectedDialCode != code) {
         _selectedDialCode = code;
-        _dropDownController.text = _dialCodeCountryNameMapping[code] ?? "invalid country code";
+        _dropDownController.text = _dialCodeCountryNameMapping[_selectedDialCode] ?? "invalid country code";
         _onTextChange(code, _phoneNumber);
       }
     });
 
-    _dialCodeController.text = ![null, false].contains(widget.dialCode)
-        ? widget.dialCode
-        : _defaultDialCode;
 
     if (!_validDialCodes.contains(_selectedDialCode)) {
       throw new Exception('Invalid Dial Code');
